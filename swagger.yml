@@ -1,0 +1,84 @@
+swagger: "2.0"
+info:
+  description: This is the swagger file that describes the functionality of this api. To make a request, remove /ui and
+   add the relevant path. Supported tickers can be found from /options/getAllTickers. I have recently added many more symbols.
+   Enjoy! Feel free to contact me with questions. If you use this data frequently, please considering donating to https://paypal.me/StephenFanale?locale.x=en_US
+   so I can keep paying AWS to host this data.
+  version: "1.0.0"
+  title: Fanale Research Option Data Api
+consumes:
+  - application/json
+produces:
+  - application/json
+
+basePath: /api
+
+# Paths supported by the server application
+paths:
+  /login:
+    post:
+      operationId: users_api.login
+      tags:
+      - login
+      summary: use credentials and try to log in
+      description: use credentials and try to log in
+      consumes:
+      - application/json
+      parameters:
+      - name: body
+        in: body
+        description: Credentials
+        schema:
+          type: object
+          required:
+          - username
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+      responses:
+        201:
+          description: Successfully Logged in
+          schema:
+            type: array
+            items:
+              properties:
+                id:
+                  type: string
+
+
+  /create:
+    post:
+      operationId: users_api.create_user
+      tags:
+      - user
+      summary: try to create user
+      description: create user
+      consumes:
+      - application/json
+      parameters:
+      - name: body
+        in: body
+        description: information
+        schema:
+          type: object
+          required:
+          - username
+          properties:
+            username:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            lastname:
+              type: string
+            firstname:
+              type: string
+            birthdate:
+              type: string
+      responses:
+        201:
+          description: Successfully created user
+
