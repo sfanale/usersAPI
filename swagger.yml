@@ -1,4 +1,4 @@
-swagger: "2.0"
+openapi: "3.0.0"
 info:
   description: This is the swagger file that describes the functionality of this api. To make a request, remove /ui and
    add the relevant path. Supported tickers can be found from /options/getAllTickers. I have recently added many more symbols.
@@ -6,48 +6,9 @@ info:
    so I can keep paying AWS to host this data.
   version: "1.0.0"
   title: Fanale Research Option Data Api
-consumes:
-  - application/json
-produces:
-  - application/json
-
-basePath: /api
 
 # Paths supported by the server application
 paths:
-  /login:
-    post:
-      operationId: users_api.login
-      tags:
-      - login
-      summary: use credentials and try to log in
-      description: use credentials and try to log in
-      consumes:
-      - application/json
-      parameters:
-      - name: body
-        in: body
-        description: Credentials
-        schema:
-          type: object
-          required:
-          - username
-          properties:
-            username:
-              type: string
-            password:
-              type: string
-      responses:
-        201:
-          description: Successfully Logged in
-          schema:
-            type: array
-            items:
-              properties:
-                id:
-                  type: string
-
-
   /create:
     post:
       operationId: users_api.create_user
@@ -55,30 +16,281 @@ paths:
       - user
       summary: try to create user
       description: create user
-      consumes:
-      - application/json
-      parameters:
-      - name: body
-        in: body
-        description: information
-        schema:
-          type: object
-          required:
-          - username
-          properties:
-            username:
-              type: string
-            email:
-              type: string
-            password:
-              type: string
-            lastname:
-              type: string
-            firstname:
-              type: string
-            birthdate:
-              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                lastname:
+                  type: string
+                firstname:
+                  type: string
+                birthdate:
+                  type: string
       responses:
         201:
           description: Successfully created user
 
+
+  /getinfo/{id}:
+    get:
+      operationId: users_api.getInfo
+      tags:
+      - login
+      summary: Retrieve information for a single user
+      description: Retrieve information for a single user
+      parameters:
+      - name: id
+        in: path
+        description: user id
+        required: True
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successfully found user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: string
+                    username:
+                      type: string
+                    email:
+                      type: string
+                    firstname:
+                      type: string
+                    lastname:
+                      type: string
+                    birthdate:
+                      type: string
+                    confirmed:
+                      type: string
+                    adim:
+                      type: string
+                    premium:
+                      type: string
+                    posts:
+                      type: string
+
+  /getinfo_by_name/{username}:
+    get:
+      operationId: users_api.getInfo_by_name
+      tags:
+      - user
+      summary: Retrieve information for a single user by their username
+      description: Retrieve information for a single user by username. For public profile
+      parameters:
+      - name: username
+        in: path
+        description: username
+        required: True
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successfully found user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    username:
+                      type: string
+                    email:
+                      type: string
+                    firstname:
+                      type: string
+                    lastname:
+                      type: string
+                    birthdate:
+                      type: string
+                    posts:
+                      type: string
+
+  /get_posts_by_id:
+    get:
+      operationId: users_api.get_posts_by_id
+      tags:
+      - posts
+      summary: Retrieve posts from a user by user id
+      description: Retrieve posts from a user by user id
+      responses:
+        200:
+          description: Successfully found user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    content:
+                      type: string
+                    user:
+                      type: string
+                    views:
+                      type: string
+                    likes:
+                      type: string
+                    comments:
+                      type: string
+      security:
+      - jwt: ['69']
+
+
+  /messages/get_groups/{id}:
+    get:
+      operationId: messages_api.get_message_groups
+      tags:
+      - messages
+      summary: Retrieve chats for a user
+      description: Retrieve chats for a user
+      parameters:
+      - name: id
+        in: path
+        description: user id
+        required: True
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successfully found user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: string
+                    user1:
+                      type: string
+                    user2:
+                      type: string
+                    user3:
+                      type: string
+
+  /messages/get_chat/{id}:
+    get:
+      operationId: messages_api.get_chat
+      tags:
+      - messages
+      summary: Retrieve messages in a chat
+      description: Retrieve messages in chat
+      parameters:
+      - name: id
+        in: path
+        description: chat id
+        required: True
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successfully found chat
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: string
+                    content:
+                      type: string
+                    timestamp:
+                      type: string
+                    from:
+                      type: string
+
+  /messages/send:
+    post:
+      operationId: messages_api.send_message
+      tags:
+      - messages
+      summary: send message
+      description: send message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - content
+              properties:
+                content:
+                  type: string
+                from:
+                  type: string
+                fromname:
+                  type: string
+                timestamp:
+                  type: string
+                messagegroup:
+                  type: string
+      responses:
+        201:
+          description: Successfully created user
+
+  /users/authenticate:
+    post:
+      summary: Return JWT token
+      operationId: users_api.auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - username
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        200:
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    token:
+                      type: string
+
+  /secret:
+    get:
+      summary: Return secret string
+      operationId: users_api.get_secret
+      responses:
+        '200':
+          description: secret response
+          content:
+            'text/plain':
+              schema:
+                type: string
+      security:
+      - jwt: ['69']
+
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: app.decode_token
