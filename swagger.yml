@@ -9,11 +9,11 @@ info:
 
 # Paths supported by the server application
 paths:
-  /create:
+  /users/create:
     post:
       operationId: users_api.create_user
       tags:
-      - user
+      - users
       summary: try to create user
       description: create user
       requestBody:
@@ -40,20 +40,13 @@ paths:
           description: Successfully created user
 
 
-  /getinfo/{id}:
+  /getinfo:
     get:
       operationId: users_api.getInfo
       tags:
       - login
-      summary: Retrieve information for a single user
+      summary: Retrieve account information for the logged in user
       description: Retrieve information for a single user
-      parameters:
-      - name: id
-        in: path
-        description: user id
-        required: True
-        schema:
-          type: string
       responses:
         200:
           description: Successfully found user
@@ -83,6 +76,8 @@ paths:
                       type: string
                     posts:
                       type: string
+      security:
+        - jwt: ['69']
 
   /getinfo_by_name/{username}:
     get:
@@ -150,20 +145,13 @@ paths:
       - jwt: ['69']
 
 
-  /messages/get_groups/{id}:
+  /messages/get_groups:
     get:
       operationId: messages_api.get_message_groups
       tags:
       - messages
       summary: Retrieve chats for a user
       description: Retrieve chats for a user
-      parameters:
-      - name: id
-        in: path
-        description: user id
-        required: True
-        schema:
-          type: string
       responses:
         200:
           description: Successfully found user
@@ -181,6 +169,9 @@ paths:
                       type: string
                     user3:
                       type: string
+      security:
+      - jwt: ['69']
+
 
   /messages/get_chat/{id}:
     get:

@@ -21,12 +21,15 @@ def connect_to_db():
     except ConnectionRefusedError:
         return "Connection Refused"
 
-def get_message_groups(id):
+def get_message_groups(user, token_info):
     """
 
     :return:
     """
+    username = token_info['username']
+    id = token_info['id']
     info = {'id': id}
+    print(info)
     cur, conn = connect_to_db()
     cur.execute("""SELECT * FROM message_groups WHERE user1=%(id)s OR user2=%(id)s OR user3=%(id)s""", info)
     chats = cur.fetchall()
@@ -36,14 +39,14 @@ def get_message_groups(id):
     return flask.jsonify(chats)
 
 
-def get_chat(id):
+def get_chat(chat_id, token_info):
     """
 
     :param id:
     :return:
     """
     cur, conn = connect_to_db()
-    cur.execute("""SELECT * FROM messages WHERE messagegroup=%s ORDER BY timestamp;""", id)
+    cur.execute("""SELECT * FROM messages WHERE messagegroup=%s ORDER BY timestamp;""", chat_id)
     messages = cur.fetchall()
     print(messages)
     cur.close()

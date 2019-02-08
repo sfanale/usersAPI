@@ -8,6 +8,7 @@ from flask_jwt_extended import (
     get_jwt_identity, get_jwt_claims
 )
 import jwt as JWT
+import json
 
 
 def connect_to_db():
@@ -31,8 +32,7 @@ def login(username, password):
     :return:
     """
     cur, conn = connect_to_db()
-    username = {"username":username}
-
+    username = {"username": username}
     cur.execute("""SELECT id, password FROM users WHERE username=%(username)s""", username)
     user = cur.fetchall()
     if user == []:
@@ -40,7 +40,6 @@ def login(username, password):
     print(user[0])
     cur.close()
     conn.close()
-
     if user[0]['password'] == password:
         return user[0]['id']
     else:
@@ -52,41 +51,40 @@ def auth(body):
     password = body['password']
     user_id = login(username, password)
     if user_id == 0:
-        return jsonify({"msg": "Bad username or password"}), 401
+        return {"msg": "Bad username or password"}, 401
 
     user = {'username': username, 'id': user_id}
-
     access_token = JWT.encode(user, '69', algorithm='HS256')
-    ret = {'access_token': str(access_token)}
-    return jsonify(ret), 200
+    ret = {'token': str(access_token)}
+    return ret
 
 
 def create_user(body):
     """"""
     cur, conn = connect_to_db()
-    print(body)
-
-    cur.execute("""INSERT INTO users (username, email, firstname, lastname, password, birthdate) VALUES (%(username)s,
-      %(email)s,%(firstname)s,%(lastname)s, %(password)s, %(birthdate)s);""", body)
+    cur.execute("""INSERT INTO users (username, email, firstname, lastname, password) VALUES (%(username)s,
+      %(email)s,%(firstname)s,%(lastname)s, %(password)s);""", body)
     conn.commit()
     cur.close()
     conn.close()
 
     return "Success"
 
-def getInfo(id):
+def getInfo(user, token_info):
     """
 
     :param id:
     :return:
     """
+    username = token_info['username']
+    id = token_info['id']
     cur, conn = connect_to_db()
-    cur.execute("""SELECT * FROM users WHERE id=%s;""", id)
+    user_id = {'id': id}
+    cur.execute("""SELECT * FROM users WHERE id=%(id)s;""", user_id)
     user = cur.fetchall()[0]
-    print(user)
     cur.close()
     conn.close()
-    return flask.jsonify(user)
+    return user
 
 
 def getInfo_by_name(username):
@@ -103,7 +101,7 @@ def getInfo_by_name(username):
     print(user)
     cur.close()
     conn.close()
-    return flask.jsonify(user)
+    return user
 
 
 def get_posts_by_id(user, token_info):
@@ -121,7 +119,7 @@ def get_posts_by_id(user, token_info):
     print(user)
     cur.close()
     conn.close()
-    return flask.jsonify(user)
+    return user
 
 
 def get_secret(user, token_info):
@@ -132,4 +130,43 @@ def get_secret(user, token_info):
     Decoded token claims: {user_id}.
     '''.format(username=username, user_id=user_id)
 
+
+def decode_token(token):
+    print(token.split("'")[1])
+    ret = JWT.decode(token.split("'")[1], '69', algorithms=['HS256'])
+    print(ret)
+    return ret
+
+
+def lambda_handler(event, context):
+    op = event["queryStringParameters"]['operation']
+    query = event["queryStringParameters"]['info']
+    result = []
+    if op == 'auth':
+        result = auth(json.loads(event['body']))
+
+    elif op == 'create_user':
+        create_user(json.loads(event['body']))
+        return {
+            'statusCode': 200
+        }
+
+    elif op == 'user_info':
+        token_info = decode_token(event['headers']['Authorization'])
+        result = getInfo('', token_info)
+
+    elif op == 'user_info_name':
+        result = getInfo_by_name(query)
+
+    else:
+        return {
+            'statusCode': 500,
+            'body': json.dumps(op)
+        }
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps(result),
+        'headers': {"Access-Control-Allow-Origin": "*"}
+    }
 
